@@ -14,7 +14,7 @@ public class Edicion extends javax.swing.JFrame {
      * Creates new form Edicion
      */
     public Edicion() {
-        initComponents();
+        initComponents(); 
     }
 
     /**
