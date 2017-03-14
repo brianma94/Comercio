@@ -1,4 +1,12 @@
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.DefaultTableModel;
@@ -14,14 +22,41 @@ import javax.swing.table.DefaultTableModel;
  * @author Brian
  */
 public class Consulta extends javax.swing.JFrame {
-
+    Connection conexion;
+    String ruta = "~/../data.db";
     /**
      * Creates new form Consulta
      */
-    public Consulta() {
+    public Consulta() throws SQLException {
         initComponents();
+        conectar_DB();
+        llenar_tabla();
     }
-
+    
+    public void conectar_DB(){
+        try {
+            Class.forName("org.sqlite.JDBC");
+        }catch (ClassNotFoundException e) {
+             JOptionPane.showMessageDialog(null, e.getMessage());
+        }  
+        try {
+             conexion = DriverManager.getConnection("jdbc:sqlite:"+ruta);
+             
+        }catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, e.getMessage());
+        }
+    }
+    
+    public void llenar_tabla() throws SQLException{
+        DefaultTableModel model = (DefaultTableModel)jTable1.getModel();
+        PreparedStatement st = conexion.prepareStatement("Select * from stock");
+        ResultSet rs = st.executeQuery();
+        while(rs.next()){
+            //model.addRow(new Object[]{rs.getString("nombre"), rs.getString("referencia"), Integer.toString(rs.getInt("cantidad")), Float.toString(rs.getFloat("precio"))});
+            model.addRow(new Object[]{rs.getString("nombre"), rs.getString("referencia"), rs.getInt("cantidad"), rs.getFloat("precio")});
+        }
+        st.close();
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -33,10 +68,8 @@ public class Consulta extends javax.swing.JFrame {
 
         jButton1 = new javax.swing.JButton();
         jLayeredPane1 = new javax.swing.JLayeredPane();
-        jButton2 = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
-        jButton3 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
@@ -51,19 +84,9 @@ public class Consulta extends javax.swing.JFrame {
             }
         });
 
-        jButton2.setText("+");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {"Pulsera", "123",  new Integer(2),  new Float(34.0)},
-                {"Pendiente", "456",  new Integer(3),  new Float(25.0)},
-                {"Collar", "789",  new Integer(7),  new Float(25.25)},
-                {"Amuleto", "023",  new Integer(1),  new Float(45.0)}
+
             },
             new String [] {
                 "Producto", "Referencia", "Cantidad", "Precio"
@@ -72,46 +95,34 @@ public class Consulta extends javax.swing.JFrame {
             Class[] types = new Class [] {
                 java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.Float.class
             };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
             }
         });
         jTable1.setGridColor(new java.awt.Color(0, 0, 0));
         jTable1.getTableHeader().setReorderingAllowed(false);
         jScrollPane2.setViewportView(jTable1);
 
-        jButton3.setText("-");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
-
-        jLayeredPane1.setLayer(jButton2, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jScrollPane2, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayeredPane1.setLayer(jButton3, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         javax.swing.GroupLayout jLayeredPane1Layout = new javax.swing.GroupLayout(jLayeredPane1);
         jLayeredPane1.setLayout(jLayeredPane1Layout);
         jLayeredPane1Layout.setHorizontalGroup(
             jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jLayeredPane1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton2)
-                .addContainerGap())
         );
         jLayeredPane1Layout.setVerticalGroup(
             jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jLayeredPane1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton2)
-                    .addComponent(jButton3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(40, 40, 40)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
                 .addContainerGap())
         );
@@ -146,20 +157,11 @@ public class Consulta extends javax.swing.JFrame {
         new MainFrame().setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        DefaultTableModel model = (DefaultTableModel)jTable1.getModel();
-        model.addRow(new Object[]{"", "", ""});
-    }//GEN-LAST:event_jButton2ActionPerformed
-
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        removeSelectedRows(jTable1);
-    }//GEN-LAST:event_jButton3ActionPerformed
-
     public void removeSelectedRows(JTable table){
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         int[] rows = table.getSelectedRows();
         for(int i=0;i<rows.length;i++){
-          model.removeRow(rows[i]-i);
+          model.removeRow(rows[i]-1);
         }
     }
     /**
@@ -192,15 +194,17 @@ public class Consulta extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Consulta().setVisible(true);
+                try {
+                    new Consulta().setVisible(true);
+                } catch (SQLException ex) {
+                    Logger.getLogger(Consulta.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
