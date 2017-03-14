@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -44,7 +45,10 @@ public class EliminarProducto extends javax.swing.JFrame {
     
     public void eliminar_producto() throws SQLException{
         PreparedStatement st;
-        if(!empty(nombre.getText())){
+        if(empty(nombre.getText()) && empty(referencia.getText())){
+            JOptionPane.showMessageDialog(this, "Rellene alguno de los campos.");
+        }
+        else if(!empty(nombre.getText())){
             st = conexion.prepareStatement("Delete from stock where nombre = ?");
             st.setString(1,nombre.getText());
             int cont = st.executeUpdate();
@@ -150,7 +154,19 @@ public class EliminarProducto extends javax.swing.JFrame {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
          try {
-             eliminar_producto();
+            JPasswordField pf = new JPasswordField();
+            int okCxl = JOptionPane.showConfirmDialog(null, pf, "Contraseña", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+            if (okCxl == JOptionPane.OK_OPTION) {
+              String password = new String(pf.getPassword());
+              if (password.equals("admin")){
+                eliminar_producto();   
+              }
+              else {
+                  JOptionPane.showMessageDialog(this, "Contraseña incorrecta");
+              }
+            }
+             
          } catch (SQLException ex) {
              Logger.getLogger(EliminarProducto.class.getName()).log(Level.SEVERE, null, ex);
          }
